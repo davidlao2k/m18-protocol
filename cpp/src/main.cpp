@@ -77,6 +77,19 @@ int main(int argc, char* argv[]) {
         }
 
         std::cout << "Connected to " << port << std::endl;
+        
+        // Test if battery is responding
+        try {
+            if (!m18.reset()) {
+                std::cout << "\nWARNING: Battery may not be responding" << std::endl;
+                std::cout << "Check connections and battery power" << std::endl;
+                std::cout << "Continuing anyway..." << std::endl;
+            }
+        } catch (const std::exception& e) {
+            std::cout << "\nWARNING: Battery communication test failed: " << e.what() << std::endl;
+            std::cout << "Check connections: UART-TX->J2, UART-RX->J1, GND->GND" << std::endl;
+            std::cout << "Continuing anyway..." << std::endl;
+        }
 
         // Execute appropriate mode
         if (idle_mode) {
@@ -115,30 +128,59 @@ Try: health
                 if (command == "exit" || command == "quit") {
                     break;
                 } else if (command == "health") {
-                    auto health = m18.health();
-                    std::cout << "Battery Health Report:" << std::endl;
-                    std::cout << "  Type: " << health.type << std::endl;
-                    std::cout << "  Model: " << health.model << std::endl;
-                    std::cout << "  Serial: " << health.serial << std::endl;
-                    std::cout << "  Pack Voltage: " << health.pack_voltage << "V" << std::endl;
-                    std::cout << "  Temperature: " << health.temperature << "°C" << std::endl;
-                    std::cout << "  Total Discharge: " << health.total_discharge_ah << "Ah" << std::endl;
+                    try {
+                        auto health = m18.health();
+                        if (health.type.empty() && health.model.empty()) {
+                            std::cout << "Warning: Battery not responding or no data available" << std::endl;
+                        } else {
+                            std::cout << "Battery Health Report:" << std::endl;
+                            std::cout << "  Type: " << health.type << std::endl;
+                            std::cout << "  Model: " << health.model << std::endl;
+                            std::cout << "  Serial: " << health.serial << std::endl;
+                            std::cout << "  Pack Voltage: " << health.pack_voltage << "V" << std::endl;
+                            std::cout << "  Temperature: " << health.temperature << "°C" << std::endl;
+                            std::cout << "  Total Discharge: " << health.total_discharge_ah << "Ah" << std::endl;
+                        }
+                    } catch (const std::exception& e) {
+                        std::cout << "Error reading battery health: " << e.what() << std::endl;
+                        std::cout << "Check connections: UART-TX to J2, UART-RX to J1, UART-GND to GND" << std::endl;
+                    }
                 } else if (command == "read_id") {
-                    m18.read_id();
-                    std::cout << "Read ID completed" << std::endl;
+                    try {
+                        m18.read_id();
+                        std::cout << "Read ID completed" << std::endl;
+                    } catch (const std::exception& e) {
+                        std::cout << "Error reading diagnostics: " << e.what() << std::endl;
+                        std::cout << "Battery may not be responding" << std::endl;
+                    }
                 } else if (command == "simulate") {
-                    m18.simulate();
+                    try {
+                        m18.simulate();
+                    } catch (const std::exception& e) {
+                        std::cout << "Error during simulation: " << e.what() << std::endl;
+                    }
                 } else if (command == "high") {
-                    m18.high();
-                    std::cout << "J2 is now high (20V)" << std::endl;
+                    try {
+                        m18.high();
+                        std::cout << "J2 is now high (20V)" << std::endl;
+                    } catch (const std::exception& e) {
+                        std::cout << "Error setting J2 high: " << e.what() << std::endl;
+                    }
                 } else if (command == "idle") {
-                    m18.idle();
-                    std::cout << "J2 is now low (0V)" << std::endl;
+                    try {
+                        m18.idle();
+                        std::cout << "J2 is now low (0V)" << std::endl;
+                    } catch (const std::exception& e) {
+                        std::cout << "Error setting J2 low: " << e.what() << std::endl;
+                    }
                 } else if (command.substr(0, 9) == "high_for ") {
                     try {
                         int seconds = std::stoi(command.substr(9));
                         m18.high_for(seconds);
                         std::cout << "J2 was high for " << seconds << " seconds" << std::endl;
+                    } catch (const std::exception& e) {
+                        std::cout << "Error: " << e.what() << std::endl;
+                        std::cout << "Usage: high_for N" << std::endl;
                     } catch (...) {
                         std::cout << "Usage: high_for N" << std::endl;
                     }
