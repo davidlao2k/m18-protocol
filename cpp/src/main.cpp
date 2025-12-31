@@ -115,9 +115,17 @@ Try: health
                 if (command == "exit" || command == "quit") {
                     break;
                 } else if (command == "health") {
-                    m18.health();
+                    auto health = m18.health();
+                    std::cout << "Battery Health Report:" << std::endl;
+                    std::cout << "  Type: " << health.type << std::endl;
+                    std::cout << "  Model: " << health.model << std::endl;
+                    std::cout << "  Serial: " << health.serial << std::endl;
+                    std::cout << "  Pack Voltage: " << health.pack_voltage << "V" << std::endl;
+                    std::cout << "  Temperature: " << health.temperature << "°C" << std::endl;
+                    std::cout << "  Total Discharge: " << health.total_discharge_ah << "Ah" << std::endl;
                 } else if (command == "read_id") {
                     m18.read_id();
+                    std::cout << "Read ID completed" << std::endl;
                 } else if (command == "simulate") {
                     m18.simulate();
                 } else if (command == "high") {
