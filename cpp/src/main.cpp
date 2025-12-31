@@ -147,11 +147,27 @@ Try: health
                     }
                 } else if (command == "read_id") {
                     try {
+                        std::cout << "Reading battery diagnostics..." << std::endl;
                         m18.read_id();
                         std::cout << "Read ID completed" << std::endl;
                     } catch (const std::exception& e) {
                         std::cout << "Error reading diagnostics: " << e.what() << std::endl;
-                        std::cout << "Battery may not be responding" << std::endl;
+                        std::cout << "\nDiagnostics failed. Checking battery connection..." << std::endl;
+                        
+                        // Try a reset to see if battery responds
+                        try {
+                            if (m18.reset()) {
+                                std::cout << "Battery is responding to reset command" << std::endl;
+                                std::cout << "Try 'read_id' again" << std::endl;
+                            } else {
+                                std::cout << "Battery did not respond to reset" << std::endl;
+                                std::cout << "Check connections: UART-TX->J2, UART-RX->J1, GND->GND" << std::endl;
+                            }
+                        } catch (const std::exception& reset_e) {
+                            std::cout << "Battery not responding: " << reset_e.what() << std::endl;
+                            std::cout << "Check connections: UART-TX->J2, UART-RX->J1, GND->GND" << std::endl;
+                            std::cout << "Ensure battery power is connected" << std::endl;
+                        }
                     }
                 } else if (command == "simulate") {
                     try {
