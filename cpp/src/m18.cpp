@@ -326,8 +326,26 @@ void M18::read_id(std::vector<int> id_array, bool force_refresh, const std::stri
     // Implementation similar to Python version
     // This is a simplified version - full implementation would be quite long
     if (id_array.empty()) {
-        // Read all
-        std::cout << "Reading battery diagnostics..." << std::endl;
+        // Read all - attempt to communicate with battery
+        if (!is_connected()) {
+            throw std::runtime_error("Not connected to battery");
+        }
+        
+        // Attempt to reset and read first register to verify battery is responding
+        if (!reset()) {
+            throw std::runtime_error("Battery did not respond to reset");
+        }
+        
+        try {
+            // Try to read a simple register to verify communication
+            auto response = cmd(0x00, 0x00, 0x00, 5, 0x05);
+            if (response.empty()) {
+                throw std::runtime_error("No response from battery");
+            }
+            std::cout << "Battery diagnostics available (stub implementation)" << std::endl;
+        } catch (const std::exception& e) {
+            throw std::runtime_error(std::string("Failed to read battery registers: ") + e.what());
+        }
     }
 }
 
