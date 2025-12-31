@@ -9,6 +9,8 @@ This is a C++ port of the M18 battery protocol interface. It provides the same f
 - **Charger Simulation**: Simulate Milwaukee M18 charger communication
 - **Low-level Commands**: Access calibration, configuration, and snapshot commands
 - **Debug Tools**: Brute force register scanning and command testing
+- **Interactive Shell**: Command-line interface with command history (arrow keys) for easy navigation
+- **Battery Detection**: Automatic detection of non-responsive batteries with helpful connection diagnostics
 
 ## Requirements
 
@@ -21,18 +23,20 @@ This is a C++ port of the M18 battery protocol interface. It provides the same f
 
 **Ubuntu/Debian:**
 ```bash
-sudo apt-get install build-essential cmake
+sudo apt-get install build-essential cmake libreadline-dev
 ```
 
 **Fedora/RHEL:**
 ```bash
-sudo dnf install gcc-c++ cmake
+sudo dnf install gcc-c++ cmake readline-devel
 ```
 
 **Arch:**
 ```bash
-sudo pacman -S base-devel cmake
+sudo pacman -S base-devel cmake readline
 ```
+
+**Note:** `readline` is optional. The program will work without it, but command history (arrow keys) in interactive mode won't be available. If readline is not installed, the build will automatically fall back to standard input handling.
 
 ## Building
 
@@ -73,13 +77,18 @@ g++ -std=c++17 -Wall -Wextra -O2 -Iinclude \
 
 Then use commands like:
 ```
-> health()
-> read_id()
-> simulate()
-> high()
-> idle()
-> exit()
+> health
+> read_id
+> simulate
+> high
+> idle
+> exit
 ```
+
+**Features in Interactive Mode:**
+- **Command History**: Use ↑ and ↓ arrow keys to recall previous commands (requires readline)
+- **Battery Detection**: Automatic detection when battery doesn't respond with helpful troubleshooting hints
+- **Help Command**: Type `help` to see all available commands
 
 ### Command Line Mode
 
