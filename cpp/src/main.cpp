@@ -4,6 +4,11 @@
 #include <vector>
 #include <cstring>
 
+#ifdef HAVE_READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
 void print_help() {
     std::cout << R"(M18 Protocol Interface
 
@@ -115,15 +120,40 @@ Available commands:
 Try: health
 )" << std::endl;
 
-            // Simple interactive shell
+            // Simple interactive shell with readline history support
             std::string command;
             while (true) {
+#ifdef HAVE_READLINE
+                // Use readline for command input (enables arrow keys for history)
+                char* line = readline("> ");
+                if (line == nullptr) {
+                    // EOF (Ctrl+D)
+                    std::cout << std::endl;
+                    break;
+                }
+                
+                command = line;
+                free(line);
+#else
+                // Fallback to standard getline if readline not available
                 std::cout << "> ";
-                std::getline(std::cin, command);
+                if (!std::getline(std::cin, command)) {
+                    // EOF (Ctrl+D)
+                    std::cout << std::endl;
+                    break;
+                }
+#endif
 
                 // Trim whitespace
                 command.erase(0, command.find_first_not_of(" \t"));
                 command.erase(command.find_last_not_of(" \t") + 1);
+                
+                // Add non-empty commands to history
+                if (!command.empty()) {
+#ifdef HAVE_READLINE
+                    add_history(command.c_str());
+#endif
+                }
 
                 if (command == "exit" || command == "quit") {
                     break;
