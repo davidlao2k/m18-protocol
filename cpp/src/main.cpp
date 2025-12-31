@@ -17,13 +17,13 @@ OPTIONS:
   --help                   Show this help message
 
 COMMANDS (in interactive shell):
-  m.health()               Print simple health report on battery
-  m.read_id()              Print labelled and formatted diagnostics
-  m.simulate()             Simulate charging communication
-  m.high()                 Bring J2 pin high (20V)
-  m.idle()                 Pull J2 pin low (0V)
-  m.high_for(N)            Bring J2 high for N seconds then idle
-  m.help()                 Show command help
+  health                   Print simple health report on battery
+  read_id                  Print labelled and formatted diagnostics
+  simulate                 Simulate charging communication
+  high                     Bring J2 pin high (20V)
+  idle                     Pull J2 pin low (0V)
+  high_for N               Bring J2 high for N seconds then idle
+  help                     Show command help
   
 Connect UART-TX to M18-J2 and UART-RX to M18-J1 to fake the charger
 Connect UART-GND to M18-GND
@@ -90,16 +90,16 @@ int main(int argc, char* argv[]) {
             std::cout << R"(
 Entering interactive shell...
 Available commands:
-  health()              - Print simple health report
-  read_id()             - Print all diagnostics
-  simulate()            - Simulate charging
-  high()                - Bring J2 high
-  idle()                - Bring J2 low
-  high_for(seconds)     - High for N seconds
-  help()                - Show help
-  exit()                - Exit
+  health              - Print simple health report
+  read_id             - Print all diagnostics
+  simulate            - Simulate charging
+  high                - Bring J2 high
+  idle                - Bring J2 low
+  high_for N          - High for N seconds
+  help                - Show help
+  exit                - Exit
   
-Try: health()
+Try: health
 )" << std::endl;
 
             // Simple interactive shell
@@ -108,40 +108,44 @@ Try: health()
                 std::cout << "> ";
                 std::getline(std::cin, command);
 
+                // Trim whitespace
+                command.erase(0, command.find_first_not_of(" \t"));
+                command.erase(command.find_last_not_of(" \t") + 1);
+
                 if (command == "exit" || command == "quit") {
                     break;
-                } else if (command == "health()") {
+                } else if (command == "health") {
                     m18.health();
-                } else if (command == "read_id()") {
+                } else if (command == "read_id") {
                     m18.read_id();
-                } else if (command == "simulate()") {
+                } else if (command == "simulate") {
                     m18.simulate();
-                } else if (command == "high()") {
+                } else if (command == "high") {
                     m18.high();
                     std::cout << "J2 is now high (20V)" << std::endl;
-                } else if (command == "idle()") {
+                } else if (command == "idle") {
                     m18.idle();
                     std::cout << "J2 is now low (0V)" << std::endl;
-                } else if (command.substr(0, 10) == "high_for(") {
+                } else if (command.substr(0, 9) == "high_for ") {
                     try {
-                        int seconds = std::stoi(command.substr(10));
+                        int seconds = std::stoi(command.substr(9));
                         m18.high_for(seconds);
                         std::cout << "J2 was high for " << seconds << " seconds" << std::endl;
                     } catch (...) {
-                        std::cout << "Usage: high_for(seconds)" << std::endl;
+                        std::cout << "Usage: high_for N" << std::endl;
                     }
-                } else if (command == "help()") {
+                } else if (command == "help") {
                     std::cout << R"(Available commands:
-  health()              - Print simple health report on battery
-  read_id()             - Print all registers in labelled format
-  simulate()            - Simulate charger communication
-  high()                - Bring J2 pin high (20V)
-  idle()                - Pull J2 pin low (0V)
-  high_for(N)           - Bring J2 high for N seconds then idle
-  exit() or quit()      - Exit the program
+  health              - Print simple health report on battery
+  read_id             - Print all registers in labelled format
+  simulate            - Simulate charger communication
+  high                - Bring J2 pin high (20V)
+  idle                - Pull J2 pin low (0V)
+  high_for N          - Bring J2 high for N seconds then idle
+  exit or quit        - Exit the program
 )" << std::endl;
                 } else if (!command.empty()) {
-                    std::cout << "Unknown command. Type help() for commands." << std::endl;
+                    std::cout << "Unknown command. Type 'help' for commands." << std::endl;
                 }
             }
         }

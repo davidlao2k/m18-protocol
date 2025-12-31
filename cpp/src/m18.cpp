@@ -77,9 +77,17 @@ std::string M18::select_port() {
     }
 
     int choice = 0;
+    std::string input;
     while (choice < 1 || choice > static_cast<int>(ports.size())) {
         std::cout << "Choose a port (1-" << ports.size() << "): ";
-        std::cin >> choice;
+        if (!std::getline(std::cin, input)) {
+            throw std::runtime_error("Failed to read port selection");
+        }
+        try {
+            choice = std::stoi(input);
+        } catch (...) {
+            choice = 0;
+        }
     }
 
     return ports[choice - 1];
